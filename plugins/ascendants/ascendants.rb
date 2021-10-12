@@ -1,7 +1,7 @@
 $:.unshift File.dirname(__FILE__)
 
 module AresMUSH
-     module Ascendants
+  module Ascendants
 
     def self.plugin_dir
       File.dirname(__FILE__)
@@ -12,7 +12,18 @@ module AresMUSH
     end
 
     def self.get_cmd_handler(client, cmd, enactor)
-      nil
+      case cmd.root
+      when "boon"
+        case cmd.switch
+        when "grant"
+          return BoonGrantCmd
+        when "use"
+          return BoonUseCmd
+        when nil
+          return client.emit ("Boon command coming to a game near you soon!")
+        end
+      end
+      return nil
     end
 
     def self.get_event_handler(event_name)

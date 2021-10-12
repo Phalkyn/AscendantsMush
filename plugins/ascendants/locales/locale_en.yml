@@ -1,3 +1,17 @@
 ---
 en:
-  ascendants: {}
+  boons:
+    not_boon: "That's not a boon."
+    dont_know_it: "You know know %{boon}."
+    no_meta_found: "This boon is supposed to have meta effects."
+    no_boons_here: "You can't use boons here."
+    no_boons_you: "You can't use boons."
+    no_such_effect: "You input '%{effect}' as a meta effect. The code says this doesn't exist."
+    too_many_rooms: "The location you specified was too ambiguous and returned more than one result. Try something more specific."
+    no_room: "The location you specified returned no results."
+    no_such_char: "There's no character named '%{name}'."
+    no_necrophila: "That character's dead. We don't allow that sort of thing here."
+    no_can_do: "That character's gone. Sorry."
+    already_know_boon: "That char already knows '%{boon}'."
+    too_powerful: "That character is too pathetically weak for such a powerful boon. (Boon: %{boon} Level: %{boon_level})"
+    added_boon: "Boon (%{boon}) granted to %{name}."

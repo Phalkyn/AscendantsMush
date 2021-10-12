@@ -1,0 +1,58 @@
+--- 
+meta_effects:
+  potency: 
+    desc: basic increase to boon potency
+    emote: focuses extra hard!
+    requirements:
+      any_purview: 1
+    pot: 1
+    diff: 1
+  duration: 
+    desc: basic increase to boon duration
+    emote: focuses extra hard!
+    requirements:
+      any_purview: 1
+    dur: 1
+    diff: 1
+  area:
+    desc: basic increase to boon area
+    emote: focuses extra hard!
+    requirements:
+      any_purview: 1
+    are: 1
+    diff: 1
+  action:
+    desc: basic increase to boon potency
+    emote: focuses extra hard!
+    requirements:
+      any_purview: 1
+    act: 1
+    diff: 1
+  range:
+    desc: basic increase to boon potency
+    emote: focuses extra hard!
+    requirements:
+      any_purview: 1
+    ran: 1
+    diff: 1
+  careful:
+    desc: basic increase to boon potency
+    emote: takes their time preparing the boon.
+    requirements:
+      any_purview: 1
+    act: -1
+    diff: -1
+  weak:
+    desc: basic increase to boon potency
+    emote: limits the energy they channel.
+    requirements:
+      any_purview: 1
+    pot: -1
+    diff: -1
+  fast:
+    desc: basic increase to boon potency
+    emote: does it fast and dirty!
+    requirements:
+      any_purview: 1
+    act: 2
+    diff: 2
