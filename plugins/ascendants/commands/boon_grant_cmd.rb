@@ -18,7 +18,7 @@ module AresMUSH
       end
 
       def check_errors
-        return t('boons.invalid_name') if !self.target
+        return t('boons.no_such_char') if !self.target
         return t('boons.not_boon') if !Ascendants.is_boon?(self.boon)
         return t('boons.already_know_boon', :boon => self.boon) if Ascendants.find_boon_learned(self.target, self.boon)
         return t('boons.too_powerful', :boon => boon, :boon_level => boon_level) if Ascendants.boon_level_check(target, boon)
@@ -29,7 +29,7 @@ module AresMUSH
 
       def handle
         BoonsLearned.create(name: self.boon, last_learned: Time.now, character: target, xp_needed: 0, learning_complete: true)
-        client.emit_success t('boons.added_boon', :boon => self.spell, :name => self.target.name)
+        client.emit_success t('boons.added_boon', :boon => self.boon, :name => self.target.name)
       end
 
     end

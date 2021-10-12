@@ -20,7 +20,7 @@ module AresMUSH
         when "use"
           return BoonUseCmd
         when nil
-          client.emit ("Boon command coming to a game near you soon!")
+          return client.emit ("Boon command coming to a game near you soon!")
         end
       end
       return nil

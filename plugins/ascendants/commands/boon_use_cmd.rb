@@ -3,7 +3,7 @@ module AresMUSH
     class BoonUseCmd
     # boon/use <boon name>=<target>/<meta> - Attempts to use the named boon. If the boon allows a target, add a target. If there's extra, add it at the end!
       include CommandHandler
-      attr_accessor :name, :spell, :spell_list, :has_target, :args, :mod, :targets, :target_name_string, :target_name
+      attr_accessor :boon, :targets, :meta, :boon_config
 
       def parse_args
         args = cmd.parse_args(ArgParser.arg1_equals_optional_arg2)
@@ -38,17 +38,19 @@ module AresMUSH
         # return t('boons.no_target_allowed', :boon => self.boon ) if count_targets > self.boon_config["allowed_targets_num"]
 
         # Does it need meta effects?
-        return t('boons.no_meta_found', :boon => self.boon ) if self.boon_config["meta_required"] && !self.meta.empty?
+        return t('boons.no_meta_found' ) if self.boon_config["meta_required"] && !self.meta.empty?
 
         # Can you boon here?
-        return t('boons.no_boons_here', :boon => self.boon ) if enactor.room.boons_blocked
+        return t('boons.no_boons_here' ) if enactor.room.boons_blocked
 
         # Can you boon at all?
-        return t('boons.no_boons_you', :boon => self.boon ) if enactor.boons_blocked
+        return t('boons.no_boons_you' ) if enactor.boons_blocked
 
         # Validate meta -- input should look like "range duration potency"
-        if !self.meta.empty? do |effect|
-          return t('boons.no_such_effect', :effect => effect ) if !Global.read_config("meta_effects").include?(effect)
+        if !self.meta.empty? 
+          self.meta.each do |effect|
+            return t('boons.no_such_effect', :effect => effect ) if !Global.read_config("meta_effects").include?(effect)
+          end
         end
 
         # Validate Target
@@ -101,8 +103,9 @@ module AresMUSH
         Ascendants.parse_meta_effects(enactor, self.meta, self.boon_config)
         client.emit "Oh geez."
       end
+
     end
   end
 end
-end
+
 
