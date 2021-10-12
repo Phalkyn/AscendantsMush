@@ -43,3 +43,4 @@ killares
 # Game directory
 # -----------------------------
 /game/
+.vscode/sftp.json
