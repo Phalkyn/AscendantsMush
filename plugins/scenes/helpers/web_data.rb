@@ -56,6 +56,9 @@ module AresMUSH
       end
       
       combat = FS3Combat.is_enabled? ? FS3Combat.combat_for_scene(scene) : nil
+      if (combat)
+        combat_data = FS3Combat.build_combat_web_data(combat, viewer)
+      end
       
       {
         id: "#{scene.id}",
@@ -64,7 +67,7 @@ module AresMUSH
         completed: scene.completed,
         summary: Website.format_markdown_for_html(scene.summary),
         content_warning: scene.content_warning,
-        tags: scene.tags,
+        tags: scene.content_tags,
         icdate: scene.icdate,
         is_private: scene.private_scene,
         participants: participants,
@@ -75,7 +78,7 @@ module AresMUSH
         is_watching: Scenes.is_watching?(scene, viewer),
         is_unread: viewer && scene.is_unread?(viewer),
         pose_order: Scenes.build_pose_order_web_data(scene),
-        combat: combat ? combat.id : nil,
+        combat: combat ? combat_data : nil,
         places: places,
         poses: poses,
         fs3_enabled: FS3Skills.is_enabled?,
@@ -210,7 +213,8 @@ module AresMUSH
         description: Website.format_markdown_for_html(char.description || ""),
         status_message: Profile.get_profile_status_message(char),
         is_ooc: char.is_admin? || char.is_playerbit?,
-        custom: Scenes.custom_char_card_fields(char, viewer)
+        custom: Scenes.custom_char_card_fields(char, viewer),
+        fs3: FS3Skills.is_enabled? ? FS3Skills.build_web_char_data(char, viewer) : nil
       }
     end
   end

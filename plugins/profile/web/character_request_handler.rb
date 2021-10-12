@@ -59,16 +59,19 @@ module AresMUSH
           siteinfo = nil
         end
           
+        prefs = Manage.is_extra_installed?("prefs") ? Website.format_markdown_for_html(char.rp_prefs) : nil
+          
         profile_data = {
           id: char.id,
           name: char.name,
+          profile_title: Profile.profile_title(char),
           name_and_nickname: Demographics.name_and_nickname(char),
           fullname: char.fullname,
           icon: Website.icon_for_char(char),
           profile_image: Website.get_file_info(char.profile_image),
           handle: char.handle ? char.handle.name : nil,
           status_message: Profile.get_profile_status_message(char),
-          tags: char.profile_tags,
+          tags: char.content_tags,
           can_manage: can_manage,
           profile: profile,
           relationships: relationships,
@@ -79,6 +82,7 @@ module AresMUSH
           last_profile_version: char.last_profile_version ? char.last_profile_version.id : nil,
           show_notes: char == enactor || Utils.can_manage_notes?(enactor),
           siteinfo: siteinfo,
+          rp_prefs: prefs,
           custom: CustomCharFields.get_fields_for_viewing(char, enactor),
         }
         
@@ -92,7 +96,7 @@ module AresMUSH
         add_to_profile profile_data, Scenes.build_web_profile_data(char, enactor)
         
         if (FS3Skills.is_enabled?)
-          profile_data['fs3'] = FS3Skills::CharProfileRequestHandler.new.handle(request)
+          profile_data['fs3'] = FS3Skills.build_web_char_data(char, enactor)
         end
         
         if Manage.is_extra_installed?("traits")

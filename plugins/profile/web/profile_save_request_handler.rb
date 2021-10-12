@@ -25,15 +25,15 @@ module AresMUSH
           return { error: t('profile.not_yet_approved') }
         end
         
-        tags = (request.args[:tags] || []).map { |t| t.downcase }.select { |t| !t.blank? }
         gallery = (request.args[:profile_gallery] || '').split.map { |g| g.downcase }
         profile_image = build_image_path(char, request.args[:profile_image])
         profile_icon = build_image_path(char, request.args[:profile_icon])
         char.update(profile_image: profile_image)
         char.update(profile_icon: profile_icon)
         char.update(profile_gallery: gallery)
-        char.update(profile_tags: tags)
         char.update(profile_order: (request.args[:profile_order] || "").split(',').map { |o| o.strip })
+        
+        Website.update_tags(char, request.args[:tags])
         
         relationships = {}
         (request.args[:relationships] || {}).each do |name, data|
@@ -69,6 +69,13 @@ module AresMUSH
         
         Describe.save_web_descs(char, request.args['descs'])
 
+        if Manage.is_extra_installed?("prefs")
+          error = Prefs.save_web_profile_data(char, enactor, request.args)
+          if (error)
+            return { error: error }
+          end
+        end
+        
         error = Roles.save_web_profile_data(char, enactor, request.args)
         if (error)
           return { error: error }

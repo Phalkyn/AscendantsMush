@@ -40,7 +40,6 @@ module AresMUSH
     end
     
     def self.mark_read_for_player(char, post)
-      Forum.mark_read(post, char)
       AresCentral.alts(char).each do |alt|
         Forum.mark_read(post, alt)
       end
@@ -75,6 +74,7 @@ module AresMUSH
         new_post = BbsPost.create(bbs_board: category, 
         subject: subject, 
         message: message, author: author)
+        Forum.update_tags(new_post)
         
         if (client)
           Forum.mark_read_for_player(author, new_post)
@@ -93,7 +93,7 @@ module AresMUSH
           author: {name: author_name, icon: Website.icon_for_char(author), id: author.id},
           subject: subject,
           message: Website.format_markdown_for_html(message),
-          raw_message: message,
+          raw_message: Website.format_input_for_html(message),
           type: 'new_forum_post'
         }
         Forum.notify(new_post, category, :new_forum_post, message, data)
@@ -130,7 +130,7 @@ module AresMUSH
           author: { name: author.name, icon: Website.icon_for_char(author), id: author.id },
           subject: post.subject,
           message: Website.format_markdown_for_html(reply),
-          raw_message: reply,
+          raw_message: Website.format_input_for_html(reply),
           type: 'forum_reply'
         }
         
@@ -242,6 +242,7 @@ module AresMUSH
     def self.edit_post(post, enactor, subject, message)
       post.update(message: message)
       post.update(subject: subject)
+      Forum.update_tags(post)
       Forum.mark_unread(post)
       category = post.bbs_board
       notification = t('forum.new_edit', :subject => post.subject, 
@@ -255,7 +256,8 @@ module AresMUSH
         author: {name: enactor.name, icon: Website.icon_for_char(enactor), id: enactor.id},
         subject: post.subject,
         message: Website.format_markdown_for_html(message),
-        raw_message: message,
+        raw_message: Website.format_input_for_html(message),
+        tags: post.content_tags,
         type: 'forum_edited'
       }
       
@@ -281,7 +283,7 @@ module AresMUSH
         subject: post.subject,
         author: {name: enactor.name, icon: Website.icon_for_char(enactor), id: enactor.id},
         message: Website.format_markdown_for_html(message),
-        raw_message: message,
+        raw_message: Website.format_input_for_html(message),
         type: 'reply_edited'
       }
       
@@ -314,6 +316,11 @@ module AresMUSH
         .select { |p| Forum.can_write_to_category?(p, category)}
         .sort_by { |p| [ p == char ? 0 : 1, p.name ]}
         .map { |p| { id: p.id, name: p.name, icon: Website.icon_for_char(p) }}   
+     end
+     
+     def self.update_tags(post)
+       hashtags = (post.message || "").scan(/\s#[^#]\S+/).map { |t| t.after('#') }
+       Website.update_tags(post, hashtags)
      end
   end
 end

@@ -46,7 +46,7 @@ module AresMUSH
     
     def self.is_watching?(scene, char)
       return false if !char
-      alts = AresCentral.alts(char)
+      alts = AresCentral.play_screen_alts(char)
       (scene.watchers.to_a & alts).any?
     end
     
@@ -65,9 +65,11 @@ module AresMUSH
         
         if (!scene.completed)
           scene_data = Scenes.build_live_scene_web_data(scene, char).to_json
+          alts = AresCentral.play_screen_alts(enactor)
           Global.client_monitor.notify_web_clients(:joined_scene, scene_data, true) do |c|
-            c == char
+            c && alts.include?(c)
           end
+          
           
           if (char != enactor)
             message = t('scenes.scene_notify_added_to_scene', :num => scene.id)
