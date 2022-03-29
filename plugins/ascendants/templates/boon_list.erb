@@ -1,0 +1,14 @@
+<%= header %>
+<%= center( t('boons.boon_list_header', :name => char.name.upcase) , 65 ) -%>
+
+<%= section_line 'Attuned Purviews' -%>
+<% purviews.each do |a| -%>
+<%= a -%>
+<% end %>
+
+<%= section_line 'Mastered Boons' -%>
+<% boons.each do |a| -%>
+<%= a -%>
+<% end %>
+
+<%= footer %>

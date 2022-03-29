@@ -36,6 +36,9 @@ module AresMUSH
 
       when 'handle'
         char.handle ? "@#{char.handle.name}" : ""
+
+      when 'purview'
+        char.fs3_advantages.sort_by(:name, :order => "ALPHA").each_with_index.map { |t| t.name }.excluding("Legend")
         
       else 
         nil

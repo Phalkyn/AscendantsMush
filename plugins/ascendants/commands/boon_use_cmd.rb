@@ -1,107 +1,83 @@
 module AresMUSH
   module Ascendants
     class BoonUseCmd
-    # boon/use <boon name>=<target>/<meta> - Attempts to use the named boon. If the boon allows a target, add a target. If there's extra, add it at the end!
+    # boon/use <boon name>=<target> <+/-mod> - Attempts to use the named boon. Mod will be +/- #.
+    # Meta magic effects have been commented out for now.
       include CommandHandler
-      attr_accessor :boon, :targets, :meta, :boon_config
+      attr_accessor :boon_name, :targets, :modifier, :boon_config, :enactor_room
 
       def parse_args
-        args = cmd.parse_args(ArgParser.arg1_equals_optional_arg2)
-        self.boon = titlecase_arg(args.arg1)
-        if args.arg2
-          if (args.arg2.include?("/"))
-            self.targets = [trim_arg(args.arg2.first("/"))]
-            self.meta = trimmed_list_arg(args.arg2.rest("/"))
-          else
-            self.targets = [trim_arg(args.arg2)]
-            self.meta = []
-          end
-        else
-          self.targets = []
-          self.meta = []
-        end
+        args = cmd.parse_args(/(?<arg1>[^\=\+\-]+)\=?(?<arg2>[^\+\-]+)?(?<arg3>[\+\-]\d)?/)
+        self.boon_name = titlecase_arg(args.arg1)
+        self.targets = trimmed_list_arg(args.arg2)
+        self.modifier = args.arg3 ? integer_arg(args.arg3.delete("+")) : 0
+        self.enactor_room = enactor.room
+      end
+
+      def required_args
+        [ self.boon_name ]
       end
 
       def check_errors
-        self.boon_config = Global.read_config("boons", self.boon)
+        # are you approved?
+        return t('boons.char_not_approved') if !(enactor.is_approved?)
 
-        # if you're in combat, you can't use this command! Use combat/boon instead.
+        self.boon_config = Global.read_config("boons").select { |m| m['name'].upcase == self.boon_name.upcase }.first
+
+        # if you're in combat, you can't use this command! Use combat/boon instead. Not used for now.
         # return t('boons.use_combat_spell') if enactor.combat
 
         # is it a real boon?
-        return t('boons.not_boon') if !Ascendants.is_boon?(self.boon)
+        return t('boons.not_boon', :boon_name => self.boon_name) if !Ascendants.is_boon?(self.boon_name)
 
         # Does the user know the boon?
-        return t('boons.dont_know_it', :boon => self.boon) if !Ascendants.find_boon_learned(self.enactor, self.boon)
+        return t('boons.dont_know_it', :boon_name => self.boon_name) if !Ascendants.find_boon_learned(enactor, self.boon_name)
 
-        # Right num of targets?
-        # return t('boons.no_target_allowed', :boon => self.boon ) if count_targets > self.boon_config["allowed_targets_num"]
+        # Can you boon here? -- not used yet. 
+        # return t('boons.no_boons_here' ) if enactor.room.boons_blocked
 
-        # Does it need meta effects?
-        return t('boons.no_meta_found' ) if self.boon_config["meta_required"] && !self.meta.empty?
+        # Can you boon at all? -- Not used yet.
+        # return t('boons.no_boons_you' ) if enactor.boons_blocked
 
-        # Can you boon here?
-        return t('boons.no_boons_here' ) if enactor.room.boons_blocked
+        # Validate Target -- Should return an array w/ rooms, characters, etc.
+        
+        return t('boons.self_only') if boon_config["subject"].include?("self") && self.targets != [enactor.name]
 
-        # Can you boon at all?
-        return t('boons.no_boons_you' ) if enactor.boons_blocked
+# Not validating rn.
+        #Ascendants.validate_targets( enactor, self.boon_config, self.targets )
 
-        # Validate meta -- input should look like "range duration potency"
-        if !self.meta.empty? 
-          self.meta.each do |effect|
-            return t('boons.no_such_effect', :effect => effect ) if !Global.read_config("meta_effects").include?(effect)
-          end
-        end
-
-        # Validate Target
-        if self.targets.empty?
-
-          if self.boon_config["subject"].include?("Self")
-            self.targets = [Character.named(enactor.name)]
-
-          elsif self.boon_config["subject"].include?("Area")
-            self.targets = [enactor.room]
-
-          elsif self.boon_config["subject"].include?("Narrative")
-            # do nothing?
-
-          else
-            self.targets = [Character.named(enactor.name)]
-          end
-
-        elsif self.boon_config["subject"].include?("Self") && self.targets != [enactor.name]
-          return t('boons.self_only')
-
-        elsif self.boon_config["subject"].include?("Area") && self.targets.include?("Here")
-          self.targets = [enactor.room]
-
-        elsif self.boon_config["subject"].include?("Area")
-          return t('boons.too_many_rooms') if Room.find_single_room(self.targets).count() > 1 
-          return t('boons.no_room') if Room.find_single_room(self.targets).count() == 1 
-
-          self.targets = [Room.find_single_room(self.targets)]
-
-        elsif self.boon_config["subject"].include?("Mobile")
-          self.targets.each do |name|
-            char = Character.named(name)
-            return t('boons.no_such_char', :name => name ) if !char
-            return t('boons.no_necrophilia') if char.idle_state == "Dead"
-            return t('boons.no_can_do') if char.idle_state == "Gone"
-
-            chars << [char]
-          end
-          self.targets = chars
-        else
-          #hopefully the last possible option is subject = narrative, where target is never narrative and never qualified.
-          self.targets = self.targets
-        end
       end
 
 
       def handle
+
+        result = Ascendants.boon_use_check_noncombat( enactor, self.boon_name, self.targets, self.boon_config, self.modifier)
+        target_list = self.targets ? Ascendants.skews_list(self.targets) : "themself"
+        success_message = t('boons.boon_success', :name => enactor.name, :succeeds => result[:succeeds], :die_result => result[:die_result] )
+
+        if result[:succeeds] == "%xgSUCCEEDS%xn"
+          use_message = t('boons.boon_use_message', :name => enactor.name, :boon => self.boon_name, :targets => target_list)
+          #Ascendants.handle_spell_cast_achievement(enactor)
+        else
+          #Spell fails
+          use_message = t('boons.boon_fail_message', :name => enactor.name)
+        end
+
+        self.enactor_room.emit success_message
+        if self.enactor_room.scene
+          Scenes.add_to_scene(self.enactor_room.scene, success_message)
+        end
+
+        Global.dispatcher.queue_timer(1, "Boon success delay", client) do
+          self.enactor_room.emit use_message
+          if self.enactor_room.scene
+            Scenes.add_to_scene(self.enactor_room.scene, use_message)
+          end
+        end
+
         #Parse metaeffects 
-        Ascendants.parse_meta_effects(enactor, self.meta, self.boon_config)
-        client.emit "Oh geez."
+        # Ascendants.parse_meta_effects(enactor, self.meta, self.boon_config)
+        
       end
 
     end

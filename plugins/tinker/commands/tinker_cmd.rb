@@ -2,15 +2,16 @@ module AresMUSH
   module Tinker
     class TinkerCmd
       include CommandHandler
-      
-      def check_can_manage
-        return t('dispatcher.not_allowed') if !enactor.has_permission?("tinker")
-        return nil
-      end
-      
-      def handle
-        client.emit_success "Done!"
-      end
+      attr_accessor :boon_name, :targets, :modifier, :boon_config
+
+def advantages
+        list = []
+        enactor.fs3_advantages.sort_by(:name, :order => "ALPHA").each_with_index do |l, i|
+          list << format_skill(l, i)
+        end
+        return list
+        end
+        
 
     end
   end

@@ -1,7 +1,7 @@
 module AresMUSH
   module Ascendants
 
-    def parse_meta_effects(enactor, meta, boon_config)
+    def self.parse_meta_effects(enactor, meta, boon_config)
       # meta effects are already checked for validity - ie, does this effect exist?
       # they will not be checked against the character, the boon, etc.
       # can the character use this? (check requirements)
@@ -14,7 +14,7 @@ module AresMUSH
       effect_act = 0
 
       meta.each do |effect|
-        effect_config = Global.read_config("meta_effects", effect)
+        effect_config = Global.read_config("meta_effects").select { |m| m['name'].upcase == effect.upcase }.first
         effect_reqs = effect_config["requirements"]
         effect_reqs.each do |req|
           # for each requirement, do you pass? If no, +2 diff

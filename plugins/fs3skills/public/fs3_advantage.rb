@@ -12,26 +12,50 @@ module AresMUSH
     def print_rating
       case rating
       when 0
-          return ""
+        return ""
       when 1
         return "%xg@%xn"
       when 2
-        return "%xg@%xy@%xn"
+        return "%xg@@%xn"
       when 3
-        return "%xg@%xy@%xr@%xn"
+        return "%xg@@%xy@%xn"
+      when 4
+        return "%xg@@%xy@@%xn"
+      when 5
+        return "%xg@@%xy@@%xr@%xn"
+      when 6
+        return "%xg@@%xy@@%xr@@%xn"
+      when 7
+        return "%xg@@%xy@@%xr@@%xb@%xn"
+      when 8
+        return "%xg@@%xy@@%xr@@%xb@@%xn"
+      when 9
+        return "%xy********%xn"
       end
     end
     
     def rating_name
       case rating
       when 0
-        return t('fs3skills.everyman_rating')
+        return t('fs3skills.incapable_rating')
       when 1
-        return t('fs3skills.fair_rating')
+        return t('fs3skills.everyman_rating')
       when 2
-        return t('fs3skills.good_rating')
+        return t('fs3skills.fair_rating')
       when 3
+        return t('fs3skills.competent_rating')
+      when 4
+        return t('fs3skills.good_rating')
+      when 5
+        return t('fs3skills.great_rating')
+      when 6
         return t('fs3skills.exceptional_rating')
+      when 7
+        return t('fs3skills.amazing_rating')
+      when 8
+        return t('fs3skills.legendary_rating')
+      when 9
+        return t('fs3skills.god_rating')
       end
     end
   end

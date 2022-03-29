@@ -17,10 +17,16 @@ module AresMUSH
         case cmd.switch
         when "grant"
           return BoonGrantCmd
+        when "remove"
+          return BoonRemoveCmd
         when "use"
           return BoonUseCmd
+        when "catalog"
+          return BoonCatalogCmd
+        when "learn"
+          return BoonLearnCmd
         when nil
-          return client.emit ("Boon command coming to a game near you soon!")
+          return BoonCmd
         end
       end
       return nil

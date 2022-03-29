@@ -29,6 +29,8 @@ module AresMUSH
         return "%xg@@%xy@@%xr@@%xb@%xn"
       when 8
         return "%xg@@%xy@@%xr@@%xb@@%xn"
+      when 9
+        return "%xy********%xn"
       end
     end
     
@@ -52,6 +54,8 @@ module AresMUSH
         return t('fs3skills.amazing_rating')
       when 8
         return t('fs3skills.legendary_rating')
+      when 9
+        return t('fs3skills.god_rating')
       end
     end
   end
